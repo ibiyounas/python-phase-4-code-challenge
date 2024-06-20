@@ -55,26 +55,26 @@ api.add_resource(RestaurantById, "/restaurants/<int:id>")
 
 class Pizzas(Resource):
     def get(self):
-        pizzas = Pizza.query.all()
-        pizzas_list = [pizza.to_dict(rules=('-restaurant_pizzas',)) for pizza in pizzas]
-        return make_response(pizzas_list, 200)
+        pizzas = [pizza.to_dict() for pizza in Pizza.query.all()]
+        return make_response(pizzas, 200)
 
 api.add_resource(Pizzas, "/pizzas")
 
 class RestaurantPizzasRoute(Resource):
     def post(self):
         try:
-            data = request.get_json()
-            restaurant_pizza = RestaurantPizza(
-                price = data['price'],
-                restaurant_id=data['restaurant_id'],
-                pizaa_id = data['pizza_id']
+            params = request.json
+            new_restaurant_pizza = RestaurantPizza(
+                price = params.get('price'),
+                pizza_id = params.get('pizza_id'),
+                restaurant_id = params.get('restaurant_id')
             )
-            db.session.add(restaurant_pizza)
+
+            db.session.add(new_restaurant_pizza)
             db.session.commit()
-            return make_response(restaurant_pizza.to_dict(), 201)
+            return make_response(new_restaurant_pizza.to_dict(), 201)
         except ValueError as v_error:
-            return make_response({"errors": [str(v_error)]}, 400)
+            return make_response({"errors": ["validation errors"]}, 400)
 
 api.add_resource(RestaurantPizzasRoute, '/restaurant_pizzas')
     
